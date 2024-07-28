@@ -1,40 +1,29 @@
-# homebridge-udp-multiswitch-generic
+# homebridge-udp-switch-generic
 
 Simple UDP switches for Homebridge.
 
-Allows for virtual switches to be created in Homebridge that, when activated,
-send UDP packets to a specified destination. The payload of the UDP packet is
-defined as a string, and sent exactly as specified.
+Allows for virtual on/off switches to be created in Homebridge that, when
+activated, send UDP datagrams to a specified destination. The payload of the UDP
+datagram can be defined in the configuration each state of the switch.
 
-Two switch types are supported: "Switch" (on/off) and "Multiswitch" (selectable
-named states).
-
-*Forked from [homebridge-udp-multiswitch][original-hb-udp]*
+*Forked from [homebridge-udp-multiswitch][original-hb-udp], which appears to
+have been abandoned.*
 
 ### Changes from `homebridge-udp-multiswitch`
 
-The original `homebridge-udp-multiswitch` plugin appears to have been abandoned.
-It contains several undocumented behaviors that did not work in my application,
-such as sending a generic "broadcast" payload before the real payload requiring
-all payloads to be hex encoded.
+1. A fixed "broadcast" payload is no longer sent out before the switch payload
+2. The "Multiswitch" has been removed to simplify the code
+3. Payloads are no longer *required* to be hex encoded in the plugin
+   configuration
 
-More supported payload encodings have been added, and the default is now plain
-text. The initial "broadcast" payload is no longer sent.
-
-I needed more control to send commands to a Brightsign player, so this fork was
-created.
-
-## Switch Services
-
-### Switch (standard on/off)
+## Example Configuration
 
 Represents a standard on/off switch. This could be used for things like lights,
 TVs and projectors, fans, etc.
 
 ```
 {
-        "accessory": "UdpMultiswitch",
-        "switch_type": "Switch",
+        "accessory": "UdpSwitch",
         "name": "My Projector",
         "host": "my-projector.local",
         "port": 5000,
@@ -43,36 +32,16 @@ TVs and projectors, fans, etc.
 }
 ```
 
-### Multiswitch (selectable custom states)
-
-Represents multi-state switchers, such as a TV with inputs or a dashboard with
-multiple pages.
-
-```
-{
-    "accessory": "UdpMultiswitch",
-    "switch_type": "Multiswitch",
-    "name": "Some Selector",
-    "host": "192.168.0.100",
-    "port": 80,
-    "payload_encoding": "hex"
-    "multiswitch": [
-                { "name": "Left", "payload" : "536574204C656674" },
-                { "name": "Middle", "payload" : "536574204D4944444C45" },
-                { "name": "Right", "payload" : "526967687421" },
-            ]
-}
-```
-
-## Configuration Params
+## Configuration Parameters
 
 |      Parameter     |                                  Description                                  | Required |
 | ------------------ | ----------------------------------------------------------------------------- |:--------:|
 | `name`             | Name of the accessory                                                         |     ✓    |
-| `switch_type`      | One of `Switch` or `Multiswitch`                                              |     ✓    |
-| `host`             | Network address to send UDP datagrams to                                      |     ✓    |
-| `port`             | UDP port to send datagrams to                                                 |     ✓    |
+| `host`             | Network address to send UDP datagrams to. Can be a hostname or IPv4 address   |     ✓    |
+| `port`             | UDP destination port where the target host is listening                       |     ✓    |
 | `payload_encoding` | Sets how payload fields in the configuration are interpreted. See table below |          |
+| `on_payload`       | Payload for the on state                                                      |     ✓    |
+| `off_payload`      | payload for the off state                                                     |     ✓    |
 
 ### Payload Encodings
 
@@ -84,34 +53,10 @@ multiple pages.
 | `json`      | Any JSON structre within the payload field will be serialized into the datagram           |         |
 | `text_list` | The payload is a JSON list of `text`. They will put in the datagram separated by newlines |         |
 
-### Switch Parameters
-
-|    Parameter   |        Description        | Required |
-| -------------- | ------------------------- |:--------:|
-| `on_payload`   | Payload for the on state  |     ✓    |
-| `off_payload`  | payload for the off state |     ✓    |
-
-### Multiswitch Parameters
-
-|   Parameter   |                               Description                              | Required |
-| ------------- | ---------------------------------------------------------------------- |:--------:|
-| `multiswitch` | List of Multiswitch state objects. Order is preserved. See table below |     ✓    |
-
-#### Multiswitch State Parameters
-
-|   Parameter   |                     Description                   | Required |
-| ------------- | ------------------------------------------------- |:--------:|
-| `name`        | Display name of the switch state.                 |     ✓    |
-| `payload`     | Payload sent when entering this switch state.     |     ✓    |
-| `off_payload` | If specified, sent when exiting this switch state |          |
-
-*Note: `off_payload` for the previous state, if specified, will be sent before
-`payload` for the new state is sent*
-
 ## Installation
 
 1. Install homebridge using: `npm install -g homebridge`
-2. Install homebridge-http using: `npm install -g homebridge-udp-multiswitch-generic`
+2. Install homebridge-udp-switch using: `npm install -g homebridge-udp-switch`
 3. Update your config file
 
 [homebridge-udp-multiswitch]: https://github.com/nitaybz/homebridge-udp-multiswitch
